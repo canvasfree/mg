@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إزالة خلفية الصور</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #000;
+            margin: 20px 0;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>إزالة خلفية الصور</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="removeBackgroundButton" disabled>إزالة الخلفية</button>
+    <canvas id="canvas"></canvas>
+    <button id="downloadButton" disabled>تحميل الصورة</button>
+
+    <script>
+
+let receivedImage = null;
+
+// استقبال الصورة من المشروع الكبير
+window.addEventListener('message', function (event) {
+    console.log('تم استقبال الرسالة:', event.data); // تحقق من استقبال الرسالة
+    if (event.data.type === 'sendImageToRemoveBg') {
+        const imageUrl = event.data.image;
+        console.log('الصورة المستلمة:', imageUrl); // تحقق من الصورة المستلمة
+
+        // عرض الصورة على الـ Canvas
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // ضبط أبعاد Canvas بناءً على حجم الصورة وحجم الشاشة
+            const maxWidth = window.innerWidth * 0.8; // 80% من عرض الشاشة
+            const maxHeight = window.innerHeight * 0.6; // 60% من ارتفاع الشاشة
+            const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
+
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            // رسم الصورة بحجم مناسب
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // تفعيل زر إزالة الخلفية
+            document.getElementById('removeBackgroundButton').disabled = false;
+
+            // تعيين المتغير receivedImage بالصورة المستلمة
+            receivedImage = img; // هنا يتم تعيين receivedImage
+            console.log('تم تعيين receivedImage:', receivedImage); // تحقق من تعيين receivedImage
+        };
+        img.src = imageUrl;
+    }
+});
+
+document.getElementById('removeBackgroundButton').addEventListener('click', function() {
+    console.log('تم النقر على زر إزالة الخلفية'); // تحقق من النقر على الزر
+    if (receivedImage) {
+        console.log('receivedImage موجود:', receivedImage); // تحقق من وجود receivedImage
+        const canvas = document.getElementById('canvas');
+        const imageData = canvas.toDataURL('image/png');
+        console.log('imageData:', imageData); // تحقق من imageData
+        removeBackground(imageData);
+    } else {
+        alert('الرجاء تحميل صورة أولاً!');
+    }
+});
+
+function removeBackground(imageData) {
+    console.log('بدء عملية إزالة الخلفية'); // تحقق من بدء العملية
+    const apiKey = 'aDzG92f3gg6ixKF66QZXQB7t'; // استبدل بمفتاح API الخاص بك
+    const url = 'https://api.remove.bg/v1.0/removebg';
+
+    const formData = new FormData();
+    formData.append('image_file', dataURLtoFile(imageData, 'image.png'));
+    formData.append('size', 'auto');
+
+    console.log('إرسال طلب إلى API...'); // تحقق من إرسال الطلب
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-Api-Key': apiKey
+        },
+        body: formData
+    })
+    .then(response => {
+        console.log('استجابة API:', response); // تحقق من استجابة API
+        if (!response.ok) {
+            throw new Error('فشل في إزالة الخلفية: ' + response.statusText);
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        console.log('الصورة المستلمة:', blob); // تحقق من الصورة المستلمة
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // إعادة ضبط أبعاد Canvas بناءً على الصورة الجديدة
+            const maxWidth = window.innerWidth * 0.8;
+            const maxHeight = window.innerHeight * 0.6;
+            const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
+
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            // رسم الصورة بدون خلفية
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // تفعيل زر التحميل
+            document.getElementById('downloadButton').disabled = false;
+            document.getElementById('downloadButton').addEventListener('click', () => {
+                downloadImage(canvas);
+            });
+
+            // إرجاع الصورة المعدلة إلى المشروع الكبير
+            returnImageToMainProject(canvas.toDataURL('image/png'));
+        };
+        img.src = url;
+    })
+    .catch(error => {
+        console.error('Error:', error); // تحقق من الأخطاء
+        alert('حدث خطأ أثناء إزالة الخلفية: ' + error.message);
+    });
+}
+
+function returnImageToMainProject(imageUrl) {
+    console.log('إرجاع الصورة المعدلة إلى المشروع الكبير:', imageUrl); // تحقق من إرجاع الصورة
+    window.opener.postMessage(
+        { type: 'returnImageWithoutBg', image: imageUrl },
+        '*'
+    );
+
+    // إغلاق النافذة بعد إرسال الصورة
+    window.close();
+}
+
+function dataURLtoFile(dataurl, filename) {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
+
+function downloadImage(canvas) {
+    const link = document.createElement('a');
+    link.download = 'image_without_background.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+		
+    </script>
+</body>
+</html>

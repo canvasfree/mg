@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محرر الصور</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Amiri&family=Noto+Kufi+Arabic&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            direction: rtl;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color:  #910281;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+			margin-bottom: 20px; /* إضافة مسافة 20px أسفل الـ Navbar */
+			border-bottom: 2px solid #ccc; /* خط فاصل أسفل الـ Navbar */
+        }
+
+        .navbar h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .navbar .icons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .navbar .icons i {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        /* Container */
+        .container {
+            display: flex;
+            margin-top: 80px; /* زيادة الهامش العلوي لتجنب التداخل مع القائمة العلوية */
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+             width: 80px;
+             background-color: #910281;
+             padding: 10px;
+             position: relative;
+             z-index: 2;
+             display: flex;
+             flex-direction: column; /* ترتيب العناصر عموديًا */
+             align-items: center; /* توسيط العناصر أفقيًا */
+        }
+
+        .sidebar .icon {
+            cursor: pointer;
+            margin-bottom: 23px;
+            text-align: center;
+            color: white;
+            font-size: 30px;
+        }
+		.sidebar .icon:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }
+
+.sidebar .dropdown {
+    display: none;
+    position: absolute;
+    background-color: #555;
+    padding: 10px;
+    border-radius: 5px;
+    right: 70px;
+    width: 300px;
+    max-height: 440px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+        .sidebar .dropdown .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .sidebar .dropdown img {
+            width: 100%;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .sidebar .dropdown img:hover {
+            transform: scale(1.05);
+        }
+
+
+
+
+
+
+/* تنسيقات عامة للـ Canvas */
+.canvas-area {
+    flex: 1;
+    margin: 0 20px 0 100px; /* تم زيادة margin-left لتحريك Canvas إلى اليسار */
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#canvas {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    background-color: white;
+    width: 100%;
+    max-width: 1200px; /* زيادة أقصى عرض للـ Canvas */
+    aspect-ratio: 16 / 9; /* نسبة 16:9 */
+}
+
+/* تنسيقات متجاوبة للهواتف */
+@media (max-width: 768px) {
+    .canvas-area {
+        margin: 0; /* إزالة الهوامش على الهواتف */
+        padding: 20px; /* إضافة حشو داخلي */
+    }
+
+    #canvas {
+        max-width: 100%; /* جعل Canvas يأخذ العرض الكامل */
+        border-radius: 0; /* إزالة الزوايا المستديرة */
+        border: none; /* إزالة الحدود */
+        margin-top: 40px;
+    }
+	
+	
+		    .sidebar .dropdown {
+        right: auto; /* إلغاء المحاذاة اليمنى */
+        left: 50%; /* توسيط القائمة المنسدلة أفقيًا */
+        transform: translateX(-50%); /* توسيط القائمة المنسدلة */
+        bottom: 100%; /* جعل القائمة تفتح إلى الأعلى */
+        top: auto; /* إلغاء الوضع العلوي */
+        width: 90%; /* جعل القائمة تأخذ عرضًا أكبر */
+        max-height: 200px; /* تقليل الارتفاع الأقصى */
+    }
+
+    .sidebar .dropdown .grid {
+        grid-template-columns: repeat(2, 1fr); /* تعديل تنسيق الشبكة */
+    }
+	
+	
+	
+}
+
+/* تنسيقات متجاوبة للشاشات الكبيرة */
+@media (min-width: 1200px) {
+    #canvas {
+        max-width: 1400px; /* زيادة أقصى عرض للـ Canvas على الشاشات الكبيرة */
+    }
+	
+
+}
+
+
+
+
+
+.navbar .download-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 20px; /* تعديل المسافة بين العناصر */
+}
+
+.navbar .download-btn {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.navbar .download-btn:hover {
+    background-color: #555;
+}
+
+.navbar .download-dropdown {
+    display: none;
+    position: absolute;
+    background-color: #555;
+    padding: 10px;
+    border-radius: 5px;
+    top: 100%; /* وضع القائمة أسفل الزر */
+    left: 0; /* محاذاة القائمة مع الزر من اليسار */
+    z-index: 10000;
+    width: 150px; /* عرض القائمة المنسدلة */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.navbar .download-dropdown .dropdown-item {
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    border-radius: 3px;
+    margin: 5px 0;
+    transition: background-color 0.2s ease;
+}
+
+.navbar .download-dropdown .dropdown-item:hover {
+    background-color: #666;
+}
+
+
+
+
+
+
+
+/* تنسيقات متجاوبة للهواتف */
+@media (max-width: 768px) {
+    .navbar .download-container {
+        margin-left: 10px; /* تقليل المسافة بين العناصر */
+    }
+
+    .navbar .download-btn {
+        padding: 8px 16px; /* تقليل الحشو */
+        font-size: 14px; /* تصغير حجم الخط */
+    }
+
+    .navbar .download-dropdown {
+        width: 120px; /* تصغير عرض القائمة المنسدلة */
+    }
+
+    .navbar .download-dropdown .dropdown-item {
+        padding: 6px 10px; /* تقليل الحشو */
+        font-size: 12px; /* تصغير حجم الخط */
+    }
+		
+	        .sidebar .icon {
+            font-size: 20px;
+        }	
+	
+}
+
+
+/* تنسيقات زر التحميل على الهواتف (شاشات أصغر من 480px) */
+@media (max-width: 480px) {
+    .navbar .download-container {
+        margin-left: 5px; /* تقليل المسافة أكثر */
+    }
+
+    .navbar .download-btn {
+        padding: 6px 12px; /* تقليل الحشو أكثر */
+        font-size: 12px; /* تصغير حجم الخط أكثر */
+    }
+
+    .navbar .download-dropdown {
+        width: 100px; /* تصغير عرض القائمة المنسدلة أكثر */
+    }
+
+    .navbar .download-dropdown .dropdown-item {
+        padding: 5px 8px; /* تقليل الحشو أكثر */
+        font-size: 11px; /* تصغير حجم الخط أكثر */
+    }
+}
+
+
+
+
+
+
+        /* تنسيق القائمة العلوية */
+        .top-menu {
+            background-color: #910281;
+            color: white;
+            padding: 10px;
+            position: fixed;
+            top: 60px; /* تحتها الناف بار مباشرة */
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 35px; /* ارتفاع القائمة العلوية */
+			margin-top: 20px; /* إضافة مسافة 20px فوق الـ top-menu */
+			border: 2px solid #ccc; /* خط فاصل فوق الـ top-menu */
+			
+        }
+
+        .top-menu .icons {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .top-menu .icons i {
+            cursor: pointer;
+            font-size: 30px;
+            color: white;
+        }
+
+        .top-menu .icons i:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }
+
+        @media (max-width: 768px) {
+            .top-menu .icons {
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: center;
+            }
+
+            .top-menu .icons i {
+                font-size: 15px;
+				padding-right: 8px;
+				padding-top: 10px;
+
+            }
+			
+			.top-menu {
+			height: 65px;
+			}
+			
+    .sidebar {
+        width: 100%; /* جعل القائمة تأخذ العرض الكامل */
+        height: auto; /* ارتفاع تلقائي */
+        flex-direction: row; /* ترتيب العناصر أفقيًا */
+        justify-content: space-around; /* توزيع العناصر بشكل متساوٍ */
+        position: fixed; /* تثبيت القائمة في الأسفل */
+        bottom: 0; /* وضع القائمة في الأسفل */
+        top: auto; /* إلغاء الوضع العلوي */
+        left: 0; /* توسيط القائمة */
+        z-index: 1000; /* التأكد من ظهور القائمة فوق العناصر الأخرى */
+        padding: 10px 0; /* تعديل الحشو */
+    }
+
+    .sidebar .icon {
+        margin-bottom: 0; /* إزالة الهامش السفلي للعناصر */
+        margin-right: 10px; /* إضافة مسافة بين العناصر */
+    }
+
+    .container {
+        flex-direction: column; /* جعل العناصر تترتب عموديًا */
+    }
+
+    .canvas-area {
+        margin-bottom: 80px; /* إضافة هامش سفلي لتجنب تداخل القائمة مع الـ Canvas */
+    }
+			
+			
+			
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+
+
+
+
+
+        .dark-mode .sidebar .icon {
+            color: #fff;
+        }
+
+        .dark-mode .canvas-area {
+            background-color: #444;
+        }
+
+        .dark-mode #canvas {
+            background-color: #555;
+        }
+		
+		/* تنسيق أيقونة الطبقات */
+        .layers-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .layers-dropdown {
+            display: none;
+            position: absolute;
+            background-color: #555;
+            padding: 10px;
+            border-radius: 5px;
+            right: 0;
+            top: 30px;
+            z-index: 1000;
+            width: 120px;
+        }
+
+        .layers-dropdown .dropdown-item {
+            color: white;
+            padding: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .layers-dropdown .dropdown-item:hover {
+            background-color: #666;
+        }
+		
+		/* تنسيقات الأشكال الهندسية */
+        .shape-item {
+            cursor: pointer;
+            padding: 10px;
+            text-align: center;
+            color: white;
+            background-color: #666;
+            border-radius: 5px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px; /* حجم الأيقونات */
+        }
+
+        .shape-item:hover {
+            background-color: #888;
+        }
+
+        .shape-item i {
+            margin-right: 5px; /* مسافة بين الأيقونة والنص (إذا كان هناك نص) */
+        }	
+		
+		/* تنسيقات لعرض Color Picker في منتصف أعلى الشاشة */
+        #color-picker {
+            position: fixed;
+            top: 20px; /* أعلى الشاشة */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0; /* إخفاء الـ Color Picker الأصلي */
+            width: 0;
+            height: 0;
+            z-index: 1000;
+        }
+
+        #color-picker-icon {
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+        }
+
+        #color-picker-icon:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }	
+		
+		/* تنسيقات أيقونة الشفافية و Progress Bar */
+        .transparency-control {
+            position: relative;
+            display: inline-block;
+            margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+        }
+
+        #transparency-icon {
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        #transparency-icon:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }
+
+        #transparency-slider {
+            position: absolute;
+            top: 30px; /* أسفل الأيقونة */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px; /* عرض Progress Bar */
+            z-index: 1000;
+            display: none; /* مخفي بشكل افتراضي */
+        }
+
+        /* تنسيقات النصوص في القائمة المنسدلة */
+        .text-item {
+            cursor: pointer;
+            padding: 10px;
+            text-align: center;
+            color: white;
+            background-color: #666;
+            border-radius: 5px;
+            margin: 5px;
+            font-family: Arial, sans-serif;
+        }
+
+        .text-item:hover {
+            background-color: #888;
+        }
+
+        /* تنسيقات زر رفع الصورة */
+        .upload-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #background-toggle {
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+        }
+
+        #background-toggle:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }
+
+        /* تنسيق أيقونة تعديل النص */
+        .text-edit-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .text-edit-dropdown {
+            display: none;
+            position: absolute;
+            background-color: #555;
+            padding: 10px;
+            border-radius: 5px;
+            right: 0;
+            top: 30px;
+            z-index: 1000;
+            width: 150px; /* عرض القائمة المنسدلة */
+        }
+
+        .text-edit-dropdown .dropdown-item {
+            color: white;
+            padding: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .text-edit-dropdown .dropdown-item:hover {
+            background-color: #666;
+        }
+	
+        /* تنسيق أيقونة تغيير الخط */
+        .font-change-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .font-change-dropdown {
+            display: none;
+            position: absolute;
+            background-color: #555;
+            padding: 10px;
+            border-radius: 5px;
+            right: 0;
+            top: 30px;
+            z-index: 1000;
+            width: 200px; /* عرض القائمة المنسدلة */
+            max-height: 300px; /* أقصى ارتفاع للقائمة */
+            overflow-y: auto; /* إضافة شريط تمرير إذا كانت القائمة طويلة */
+        }
+
+        .font-change-dropdown .dropdown-item {
+            color: white;
+            padding: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .font-change-dropdown .dropdown-item:hover {
+            background-color: #666;
+        }	
+	
+        /* تنسيق أيقونة تغيير سمك حدود النص */
+        .border-thickness-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        #border-thickness-toggle {
+            font-size: 20px;
+            margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+        }
+
+        #border-thickness-toggle:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }
+
+        .border-thickness-slider {
+            display: none;
+            position: absolute;
+            background-color: #555;
+            padding: 10px;
+            border-radius: 5px;
+            right: 0;
+            top: 30px;
+            z-index: 1000;
+            width: 150px; /* عرض شريط التمرير */
+            text-align: center;
+        }
+
+        #border-thickness-range {
+            width: 100%; /* جعل شريط التمرير يأخذ العرض بالكامل */
+            margin-bottom: 5px; /* مسافة بين الشريط والقيمة */
+        }
+
+        #border-thickness-value {
+            color: white;
+            font-size: 14px;
+        }
+	
+        /* تنسيق أيقونة تغيير لون حدود النص */
+        .border-color-icon {
+            position: relative;
+            cursor: pointer;
+        }
+
+        #border-color-toggle {
+            font-size: 20px;
+            margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+        }
+
+        #border-color-toggle:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }
+	
+        /* تنسيق أيقونة محاذاة النص */
+        .text-align-icon {
+            cursor: pointer;
+        }
+
+        #text-align-toggle {
+            font-size: 20px;
+            margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+        }
+
+        #text-align-toggle:hover {
+            color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+        }
+	
+        /* تنسيق Color Picker */
+        #canvas-color-picker {
+            border: none;
+            background: none;
+            cursor: pointer;
+            width: 100%;
+            height: 40px;
+            padding: 0;
+            margin: 0;
+        }	
+		
+		
+		/* تنسيقات قائمة "فايل" */
+.file-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 20px; /* تعديل المسافة بين العناصر */
+}
+
+.file-btn {
+    padding: 10px 30px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.file-btn:hover {
+    background-color: #555;
+}
+
+.file-dropdown {
+    display: none;
+    position: absolute;
+    background-color: #555;
+    padding: 10px;
+    border-radius: 5px;
+    top: 100%; /* وضع القائمة أسفل الزر */
+    left: -100px; /* محاذاة القائمة مع الزر من اليسار */
+    z-index: 10000;
+    width: 200px; /* عرض القائمة المنسدلة */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.file-dropdown .dropdown-item {
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 14px;
+    border-radius: 3px;
+    margin: 5px 0;
+    transition: background-color 0.2s ease;
+}
+
+.file-dropdown .dropdown-item:hover {
+    background-color: #666;
+}
+		
+		
+
+
+/* تنسيقات أزرار المشاركة مع الأيقونات */
+.social-share-buttons {
+    display: flex;
+    flex-wrap: wrap; /* السماح للأزرار بالانتقال إلى سطر جديد إذا لزم الأمر */
+    gap: 10px; /* المسافة بين الأزرار */
+    margin-top: 20px; /* المسافة بين الـ Canvas والأزرار */
+    justify-content: center; /* توسيط الأزرار أفقيًا */
+}
+
+.social-share-buttons button {
+    padding: 10px;
+    background-color: #910281; /* لون الخلفية */
+    color: white; /* لون النص */
+    border: none;
+    border-radius: 50%; /* جعل الأزرار دائرية */
+    cursor: pointer;
+    font-size: 20px; /* حجم الأيقونات */
+    width: 50px; /* عرض الأزرار */
+    height: 50px; /* ارتفاع الأزرار */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease; /* تأثير تغيير اللون عند التحويم */
+}
+
+.social-share-buttons button:hover {
+    background-color: #0056b3; /* لون الخلفية عند التحويم */
+}
+
+/* تنسيقات متجاوبة للهواتف */
+@media (max-width: 768px) {
+    .social-share-buttons {
+        flex-direction: row; /* ترتيب الأزرار أفقيًا على الهواتف */
+        gap: 8px; /* تقليل المسافة بين الأزرار */
+    }
+
+    .social-share-buttons button {
+        width: 40px; /* تصغير حجم الأزرار على الهواتف */
+        height: 40px;
+        font-size: 16px; /* تصغير حجم الأيقونات */
+        margin-top: 30px;
+    }
+	.logo {
+    width: 15vw; /* 20% من عرض النافذة */
+    height: auto; /* الحفاظ على نسبة العرض إلى الارتفاع */
+    max-width: 150px; /* الحد الأقصى للعرض */
+}
+
+}
+
+/* تنسيقات متجاوبة للهواتف */
+@media (max-width: 370px) {
+
+.top-menu .icons {
+        gap: 6px;
+    }
+
+
+}
+
+
+#add-border-icon {
+    cursor: pointer;
+    font-size: 24px; /* حجم الأيقونة */
+    margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+    color: white; /* لون الأيقونة */
+    transition: color 0.3s ease; /* تأثير تغيير اللون عند التحويم */
+}
+
+#add-border-icon:hover {
+    color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+}
+
+
+/* تنسيقات أيقونة التحكم في حجم الحدود */
+#border-size-icon {
+    cursor: pointer;
+    font-size: 24px; /* حجم الأيقونة */
+    margin-left: 15px; /* تعديل المسافة بين الأيقونات */
+    color: white; /* لون الأيقونة */
+    transition: color 0.3s ease; /* تأثير تغيير اللون عند التحويم */
+}
+
+#border-size-icon:hover {
+    color: #007bff; /* تغيير لون الأيقونة عند التحويم */
+}
+
+/* تنسيقات شريط التمرير */
+.border-size-slider {
+    display: none; /* مخفي بشكل افتراضي */
+    position: absolute;
+    background-color: #555;
+    padding: 10px;
+    border-radius: 5px;
+    top: 50px; /* أسفل الأيقونة */
+    left: 50%; /* توسيط الشريط أفقيًا */
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 150px; /* عرض الشريط */
+    text-align: center;
+}
+
+#border-size-range {
+    width: 100%; /* جعل الشريط يأخذ العرض بالكامل */
+    margin-bottom: 5px; /* مسافة بين الشريط والقيمة */
+}
+
+#border-size-value {
+    color: white;
+    font-size: 14px;
+}
+#send-to-small-project{
+display: none;
+}
+#scissors-icon{
+display: none;
+}
+
+
+
+
+/* تنسيقات النصوص في القائمة المنسدلة */
+.text-item {
+    cursor: pointer;
+    padding: 8px; /* تقليل الحشو من 10px إلى 8px */
+    text-align: center;
+    color: white;
+    background-color: #666;
+    border-radius: 5px;
+    margin: 3px; /* تقليل الهوامش من 5px إلى 3px */
+    font-family: Arial, sans-serif;
+    font-size: 20px; /* تقليل حجم الخط من 24px إلى 14px */
+}
+
+.text-item:hover {
+    background-color: #888;
+}
+
+	/* تنسيقات اللوجو */
+.logo-container {
+    flex: 1; /* يأخذ المساحة المتبقية في الـ Navbar */
+    display: flex;
+    justify-content: center; /* توسيط اللوجو أفقيًا */
+    align-items: center; /* توسيط اللوجو عموديًا */
+}
+
+
+.logo {
+    width: 130px; /* يمكنك تغيير القيمة حسب الحاجة */
+    height: auto; /* الحفاظ على نسبة العرض إلى الارتفاع */
+}
+
+		
+    </style>
+</head>
+<body>
+
+     <!-- Navbar -->
+<nav class="navbar">
+    <!-- إضافة قائمة "فايل" -->
+    <div class="file-container">
+        <button class="file-btn" onclick="toggleFileDropdown()">File</button>
+        <div class="file-dropdown" id="file-dropdown">
+            <div class="dropdown-item" data-action="save-json">حفظ المشروع كملف JSON</div>
+            <div class="dropdown-item" data-action="open-json">فتح مشروع بصيغة JSON</div>
+        </div>
+    </div>
+
+    <!-- إضافة اللوجو في المنتصف -->
+    <div class="logo-container">
+        <img src="logo/logo.webp" alt="Developer Logo" class="logo">
+    </div>
+
+    <div class="download-container">
+        <button class="download-btn" onclick="toggleDownloadDropdown()">تحميل الصورة</button>
+        <div class="download-dropdown" id="download-dropdown">
+            <div class="dropdown-item" data-format="png">تحميل بصيغة PNG</div>
+            <div class="dropdown-item" data-format="jpeg">تحميل بصيغة JPEG</div>
+        </div>
+    </div>
+</nav>
+
+    <!-- القائمة العلوية -->
+    <div class="top-menu">
+        <div class="icons">
+            <i id="dark-mode-toggle" class="fas fa-moon" title="تغيير للوضع الليلي"></i>
+            <i id="delete-icon" class="fas fa-trash" title="حذف العناصر المحددة"></i>
+            <i id="undo-icon" class="fas fa-undo" title="رجوع خطوة"></i>
+            <i id="redo-icon" class="fas fa-redo" title="التقدم خطوة"></i>
+            <i id="lock-icon" class="fas fa-lock" title="قفل أي عنصر ومنعه من الحركة"></i>
+            <i id="flip-icon" class="fas fa-arrows-alt-v" title="عكس وضع اي عنصر"></i>
+			 <i id="center-icon" class="fas fa-align-center" title="توسيط العنصر المحدد"></i>
+            <!-- أيقونة الطبقات -->
+            <div class="layers-icon">
+                <i id="layers-toggle" class="fas fa-layer-group" title="تحديد الطبقات للعناصر"></i>
+                <div class="layers-dropdown" id="layers-dropdown">
+                    <div class="dropdown-item" data-action="send-to-back">طبقة سفلى</div>
+                    <div class="dropdown-item" data-action="bring-to-front">طبقة عليا</div>
+                    <div class="dropdown-item" data-action="send-backwards">إلى الخلف</div>
+                    <div class="dropdown-item" data-action="bring-forwards">إلى الأمام</div>
+                </div>
+            </div>
+            <i id="color-picker-icon" class="fa-solid fa-palette" title="تغيير ألوان العناصر"></i>
+            <input type="color" id="color-picker" style="display: none;">
+            <!-- أيقونة تعديل النص -->
+            <div class="text-edit-icon">
+                <i id="text-edit-toggle" class="fas fa-text-height" title="تغيير شكل النصوص"></i>
+                <div class="text-edit-dropdown" id="text-edit-dropdown">
+                    <div class="dropdown-item" data-action="bold">عريض</div>
+                    <div class="dropdown-item" data-action="italic">مائل</div>
+                    <div class="dropdown-item" data-action="underline">تحته خط</div>
+                    <div class="dropdown-item" data-action="border">حدود النص</div>
+                </div>
+            </div>
+            <!-- أيقونة تغيير لون حدود النص -->
+            <div class="border-color-icon" id="border-color-icon" style="display: none;">
+                <i id="border-color-toggle" class="fas fa-paint-brush"></i>
+                <input type="color" id="border-color-picker" style="display: none;">
+            </div>
+            <!-- أيقونة تغيير سمك حدود النص -->
+            <div class="border-thickness-icon" id="border-thickness-icon" style="display: none;">
+                <i id="border-thickness-toggle" class="fas fa-ruler-horizontal"></i>
+                <div class="border-thickness-slider" id="border-thickness-slider">
+                    <input type="range" id="border-thickness-range" min="0.5" max="10" step="0.5" value="2">
+                    <span id="border-thickness-value">2px</span>
+                </div>
+            </div>
+            <!-- أيقونة محاذاة النص -->
+            <div class="text-align-icon">
+                <i id="text-align-toggle" class="fas fa-align-left" title="محاذاة النص"></i>
+            </div>
+            <!-- أيقونة تغيير الخط -->
+            <div class="font-change-icon">
+                <i id="font-change-toggle" class="fas fa-font" title="تغيير نوع الخط"></i>
+                <div class="font-change-dropdown" id="font-change-dropdown">
+                    <div class="dropdown-item" data-font="Arial">Arial</div>
+                    <div class="dropdown-item" data-font="Times New Roman">Times New Roman</div>
+                    <div class="dropdown-item" data-font="Courier New">Courier New</div>
+                    <div class="dropdown-item" data-font="Verdana">Verdana</div>
+                    <div class="dropdown-item" data-font="Georgia">Georgia</div>
+                    <div class="dropdown-item" data-font="Impact">Impact</div>
+                    <div class="dropdown-item" data-font="Tahoma">Tahoma</div>
+                    <div class="dropdown-item" data-font="'Cairo', sans-serif">Cairo</div>
+                    <div class="dropdown-item" data-font="'Amiri', serif">Amiri</div>
+                    <div class="dropdown-item" data-font="'Noto Kufi Arabic', sans-serif">Noto Kufi Arabic</div>
+                </div>
+            </div>
+            <!-- أيقونة الشفافية -->
+            <div class="transparency-control">
+                <i id="transparency-icon" class="fas fa-adjust" title="اضافة تأثير الشفافية"></i>
+                <input type="range" id="transparency-slider" min="0" max="1" step="0.1" value="1" style="display: none;">
+            </div>
+            <!-- أيقونة المقص -->
+            <i id="scissors-icon" class="fa-solid fa-crop" title="فتح أداة القص"></i>
+            <!-- أيقونة إرسال الصورة إلى المشروع الصغير -->
+            <i id="send-to-small-project" class="fas fa-share" title="ارسال الصورة الى مكان القص"></i>
+			<i id="send-icon" class="fa-solid fa-crop" title="ارسال الصورة المحددة للقص" onclick="sendImageToSmallProject()"></i>
+            <!-- أيقونة الخلفية -->
+			<i id="background-toggle" class="fa-solid fa-images" title="اضافة الصور للخلفية"></i>
+			<i id="add-border-icon" class="fas fa-border-all" title="إضافة حدود"></i>
+		
+
+     <!-- أيقونة التحكم في حجم الحدود -->
+        <i id="border-size-icon" class="fas fa-ruler-horizontal" title="تحكم في حجم الحدود"></i>
+        <!-- شريط التمرير (مخفي بشكل افتراضي) -->
+        <div id="border-size-slider" class="border-size-slider">
+            <input type="range" id="border-size-range" min="1" max="10" value="2">
+            <span id="border-size-value">2px</span>
+        </div>
+        <i id="remove-bg-icon" class="fa-solid fa-eraser" title="إزالة خلفية الصورة"></i>
+         
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Backgrounds Icon -->
+            <div class="icon" onclick="toggleDropdown('dropdown1')">
+                <span><i class="fa-solid fa-photo-film" title="اختيار خلفية"></i></span>
+                <div class="dropdown" id="dropdown1">
+                    <div class="grid" id="backgrounds-grid">
+                        <!-- سيتم إضافة الصور هنا عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persons Icon -->
+            <div class="icon" onclick="toggleDropdown('dropdown2')">
+                <span><i class="fa-solid fa-person" title="اختيار شخص"></i></span>
+                <div class="dropdown" id="dropdown2">
+                    <div class="grid" id="persons-grid">
+                        <!-- سيتم إضافة الصور هنا عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emojis Icon -->
+            <div class="icon" onclick="toggleDropdown('dropdown3')">
+                <span><i class="fa-solid fa-face-grin-tears" title="اختيار الايموجي"></i></span>
+                <div class="dropdown" id="dropdown3">
+                    <div class="grid" id="emojis-grid">
+                        <!-- سيتم إضافة الصور هنا عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Icons Icon -->
+            <div class="icon" onclick="toggleDropdown('dropdown4')">
+                <span><i class="fa-solid fa-icons" title="اختيار من الايقونات"></i></span>
+                <div class="dropdown" id="dropdown4">
+                    <div class="grid" id="icons-grid">
+                        <!-- سيتم إضافة الصور هنا عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+			
+            <!-- الأشكال الهندسية -->
+            <div class="icon" onclick="toggleDropdown('dropdown5')">
+                <span><i class="fa-solid fa-shapes" title="اضافة أشكال هندسية"></i></span> <!-- أيقونة الأشكال الهندسية -->
+                <div class="dropdown" id="dropdown5">
+                    <div class="grid" id="shapes-grid">
+                        <!-- خط -->
+                        <div class="shape-item" data-shape="line">
+                            <i class="fas fa-minus"></i> <!-- أيقونة الخط -->
+                        </div>
+                        <!-- دائرة -->
+                        <div class="shape-item" data-shape="circle">
+                            <i class="fas fa-circle"></i> <!-- أيقونة الدائرة -->
+                        </div>
+                        <!-- مستطيل -->
+                        <div class="shape-item" data-shape="rectangle">
+                            <i class="fas fa-square"></i> <!-- أيقونة المستطيل -->
+                        </div>
+                        <!-- مربع -->
+                        <div class="shape-item" data-shape="square">
+                            <i class="fas fa-square-full"></i> <!-- أيقونة المربع -->
+                        </div>
+                        <!-- مثلث -->
+                        <div class="shape-item" data-shape="triangle">
+                            <i class="fas fa-play"></i> <!-- أيقونة المثلث -->
+                        </div>
+                        <!-- نجمة -->
+                        <div class="shape-item" data-shape="star">
+                            <i class="fas fa-star"></i> <!-- أيقونة النجمة -->
+                        </div>
+                        <!-- قلب -->
+                        <div class="shape-item" data-shape="heart">
+                            <i class="fas fa-heart"></i> <!-- أيقونة القلب -->
+                        </div>
+                        <!-- شكل سداسي (بديل) -->
+                        <div class="shape-item" data-shape="hexagon">
+                            <i class="fas fa-star"></i> <!-- أيقونة نجمة كبديل -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- اضافة النصوص -->
+<!-- داخل قسم الـ sidebar -->
+<div class="icon" onclick="toggleDropdown('dropdown6')">
+    <span><i class="fa-solid fa-spell-check" title="اضافة نص"></i></span> <!-- أيقونة النص -->
+    <div class="dropdown" id="dropdown6">
+        <div class="grid" id="text-templates-grid">
+            <!-- عرض نفس النص بخطوط مختلفة -->
+            <div class="text-item" data-font="Arial" data-size="24">نص تجريبي (Arial)</div>
+            <div class="text-item" data-font="Times New Roman" data-size="24">نص تجريبي (Times New Roman)</div>
+            <div class="text-item" data-font="Courier New" data-size="24">نص تجريبي (Courier New)</div>
+            <div class="text-item" data-font="Verdana" data-size="24">نص تجريبي (Verdana)</div>
+            <div class="text-item" data-font="Georgia" data-size="24">نص تجريبي (Georgia)</div>
+            <div class="text-item" data-font="'Cairo', sans-serif" data-size="24">نص تجريبي (Cairo)</div>
+            <div class="text-item" data-font="'Amiri', serif" data-size="24">نص تجريبي (Amiri)</div>
+            <div class="text-item" data-font="'Noto Kufi Arabic', sans-serif" data-size="24">نص تجريبي (Noto Kufi Arabic)</div>
+        </div>
+    </div>
+</div>
+
+            <!-- رفع الصور من جهاز المستخدم -->
+            <div class="icon" onclick="toggleDropdown('dropdown7')">
+                <span><i class="fa-solid fa-upload" title="رفع صورة من جهازك"></i></span> <!-- أيقونة رفع الصور -->
+                <div class="dropdown" id="dropdown7">
+                    <button id="upload-image-btn" class="upload-btn">رفع صورة</button>
+                    <div class="grid" id="uploaded-images-grid">
+                        <!-- سيتم إضافة الصور المرفوعة هنا عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- داخل قسم الـ sidebar -->
+            <div class="icon" onclick="toggleDropdown('dropdown9')">
+                <span><i class="fa-solid fa-border-top-left" title="اضافة اطار للصورة"></i></span> <!-- أيقونة الإطارات -->
+                <div class="dropdown" id="dropdown9">
+                    <div class="grid" id="frames-grid">
+                        <!-- سيتم إضافة الصور هنا عبر JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- داخل قسم الـ sidebar -->
+            <div class="icon" onclick="toggleDropdown('dropdown8')">
+                <span><i class="fa-solid fa-palette" title="تغيير لون الخلفية بلون سادة"></i></span> <!-- أيقونة تغيير لون الخلفية -->
+                <div class="dropdown" id="dropdown8">
+                    <input type="color" id="canvas-color-picker" style="width: 100%; height: 40px;">
+                </div>
+            </div>
+        </div>
+
+<!-- داخل قسم الـ canvas-area -->
+<div class="canvas-area">
+    <canvas id="canvas"></canvas>
+    <div class="social-share-buttons">
+        <button onclick="shareOnFacebook()" title="مشاركة على Facebook">
+            <i class="fab fa-facebook"></i>
+        </button>
+        <button onclick="shareOnTwitter()" title="مشاركة على Twitter">
+            <i class="fab fa-twitter"></i>
+        </button>
+        <button onclick="downloadImageForInstagram()" title="تحميل للرفع على Instagram">
+            <i class="fab fa-instagram"></i>
+        </button>
+        <button onclick="shareOnWhatsApp()" title="مشاركة على WhatsApp">
+            <i class="fab fa-whatsapp"></i>
+        </button>
+    </div>
+</div>
+
+
+    </div>
+	<script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js"></script>
+    <script>
+
+        let canvas;
+        let history = [];
+        let historyIndex = -1;
+
+        // Initialize Fabric.js Canvas
+        function initCanvas() {
+            const canvasElement = document.getElementById('canvas');
+            const canvasWidth = canvasElement.offsetWidth;
+            const canvasHeight = (canvasWidth * 9) / 16; // نسبة 16:9
+
+            canvas = new fabric.Canvas('canvas', {
+                backgroundColor: '#fff',
+                preserveObjectStacking: true,
+                width: canvasWidth,
+                height: canvasHeight,
+            });
+
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            // Add event listener for delete key
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Delete' || event.key === 'Backspace') {
+                    deleteSelectedObject();
+                }
+            });
+
+            // Save state to history on object modification
+            canvas.on('object:modified', saveState);
+            canvas.on('object:added', saveState);
+
+            // Initialize other functionalities
+            initDarkMode();
+            initDeleteIcon();
+            initUndoRedo();
+            initLockIcon();
+            initLayersDropdown();
+            initFlipIcon();
+            initTextEditing();
+            initShapeAdding();
+            initColorPicker();
+            initTransparencyControl();
+            initScissorsIcon();
+            initSendToSmallProject();
+        }
+
+
+// Function to resize canvas
+function resizeCanvas() {
+    const canvasElement = document.getElementById('canvas');
+    const canvasWidth = canvasElement.offsetWidth;
+    const canvasHeight = (canvasWidth * 9) / 16; // نسبة 16:9
+
+    canvas.setWidth(canvasWidth);
+    canvas.setHeight(canvasHeight);
+    canvas.renderAll();
+}
+
+// استدعاء الدالة عند تغيير حجم النافذة
+window.addEventListener('resize', resizeCanvas);
+
+// استدعاء الدالة عند تحميل الصفحة
+window.onload = function () {
+    initCanvas();
+    resizeCanvas(); // ضبط حجم Canvas عند التحميل
+    // باقي الكود...
+};
+
+        // Function to toggle dropdown
+        function toggleDropdown(id) {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            dropdowns.forEach(dropdown => {
+                if (dropdown.id !== id) {
+                    dropdown.style.display = 'none'; // إغلاق جميع القوائم الأخرى
+                }
+            });
+
+            const dropdown = document.getElementById(id);
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Function to close dropdowns when clicking outside
+        document.addEventListener('click', function (event) {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.contains(event.target) && !event.target.closest('.icon')) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        });
+
+        // Function to load image into canvas
+        function loadImage(src, type) {
+            fabric.Image.fromURL(src, function (img) {
+                if (type === 'background') {
+                    // تعيين الخلفية
+                    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                        scaleX: canvas.width / img.width,
+                        scaleY: canvas.height / img.height,
+                    });
+                } else if (type === 'person') {
+                    // ضبط حجم الشخص ليملأ الشاشة ويوضع في اليمين
+                    const scale = canvas.height / img.height;
+                    img.set({
+                        scaleX: scale,
+                        scaleY: scale,
+                        left: canvas.width - img.width * scale, // يوضع في الجانب الأيمن
+                        top: 0,
+                        hasControls: true,
+                        hasBorders: true,
+                    });
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                } else if (type === 'emoji') {
+                    // ضبط حجم الإيموجي ووضعه أعلى يسار الشاشة
+                    img.set({
+                        scaleX: 0.5,
+                        scaleY: 0.5,
+                        left: 10, // أعلى يسار
+                        top: 10,
+                        hasControls: true,
+                        hasBorders: true,
+                    });
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                } else if (type === 'icon') {
+                    // ضبط حجم الأيقونة ووضعها أعلى يمين الشاشة
+                    img.set({
+                        scaleX: 0.5,
+                        scaleY: 0.5,
+                        left: canvas.width - img.width * 0.5 - 10, // أعلى يمين
+                        top: 10,
+                        hasControls: true,
+                        hasBorders: true,
+                    });
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                } else if (type === 'frame') {
+                    // تحميل الإطار بحجم يتناسب مع الـ canvas
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height); // نسبة التحجيم
+                    img.set({
+                        scaleX: scale,
+                        scaleY: scale,
+                        left: (canvas.width - img.width * scale) / 2, // توسيط الإطار أفقيًا
+                        top: (canvas.height - img.height * scale) / 2, // توسيط الإطار عموديًا
+                        hasControls: true,
+                        hasBorders: true,
+                    });
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                }
+                canvas.renderAll();
+            });
+        }
+
+        // Function to generate image grid
+        function generateImageGrid(folder, prefix, count, gridId, type, extension = 'png') {
+            const grid = document.getElementById(gridId);
+            for (let i = 1; i <= count; i++) {
+                const img = document.createElement('img');
+                img.src = `${folder}/${prefix}${i}.${extension}`;
+                img.alt = `${prefix} ${i}`;
+                img.loading = 'lazy'; // Lazy loading for better performance
+                img.onclick = () => loadImage(img.src, type);
+                grid.appendChild(img);
+            }
+        }
+
+        // Function to toggle the download dropdown
+        function toggleDownloadDropdown() {
+            const dropdown = document.getElementById('download-dropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Function to download the image in the selected format
+        function downloadImage(format) {
+            const link = document.createElement('a');
+            const canvasElement = document.getElementById('canvas');
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // تعيين أبعاد الصورة المحملة إلى 1280x720
+            tempCanvas.width = 1280;
+            tempCanvas.height = 720;
+
+            // رسم محتوى الـ Canvas الأصلي على الـ Canvas المؤقت
+            tempCtx.drawImage(canvasElement, 0, 0, 1280, 720);
+
+            // تحويل الـ Canvas المؤقت إلى صورة
+            let mimeType, extension;
+            if (format === 'jpeg') {
+                mimeType = 'image/jpeg';
+                extension = 'jpg';
+            } else {
+                mimeType = 'image/png';
+                extension = 'png';
+            }
+
+            link.download = `edited-image.${extension}`;
+            link.href = tempCanvas.toDataURL({
+                format: mimeType,
+                quality: 1,
+            });
+            link.click();
+            alert(`تم تحميل الصورة بصيغة ${format.toUpperCase()} بنجاح!`);
+        }
+
+        // إغلاق القائمة المنسدلة عند النقر خارجها
+        document.addEventListener('click', function (event) {
+            const downloadContainer = document.querySelector('.download-container');
+            const isClickInside = downloadContainer.contains(event.target);
+
+            if (!isClickInside) {
+                document.getElementById('download-dropdown').style.display = 'none';
+            }
+        });
+
+        // إضافة حدث النقر على عناصر القائمة المنسدلة
+        document.querySelectorAll('.download-dropdown .dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const format = item.getAttribute('data-format');
+                downloadImage(format);
+                document.getElementById('download-dropdown').style.display = 'none'; // إغلاق القائمة
+            });
+        });
+
+        // Dark Mode Functionality
+        function initDarkMode() {
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+            // استرجاع حالة الوضع المظلم من localStorage
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+            // تطبيق الوضع المظلم إذا كان مفعلًا
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.classList.remove('fa-moon');
+                darkModeToggle.classList.add('fa-sun');
+            }
+
+            // التبديل بين الوضع المظلم والوضع الفاتح
+            darkModeToggle.addEventListener('click', () => {
+                const isDarkMode = document.body.classList.toggle('dark-mode');
+
+                // حفظ حالة الوضع المظلم في localStorage
+                localStorage.setItem('darkMode', isDarkMode);
+
+                // تغيير الأيقونة بناءً على الوضع الحالي
+                if (isDarkMode) {
+                    darkModeToggle.classList.remove('fa-moon');
+                    darkModeToggle.classList.add('fa-sun');
+                } else {
+                    darkModeToggle.classList.remove('fa-sun');
+                    darkModeToggle.classList.add('fa-moon');
+                }
+            });
+        }
+
+        // Delete Icon Functionality
+        function initDeleteIcon() {
+            const deleteIcon = document.getElementById('delete-icon');
+            deleteIcon.addEventListener('click', deleteSelectedObject);
+        }
+
+        // Function to delete selected objects
+        function deleteSelectedObject() {
+            const activeObjects = canvas.getActiveObjects(); // الحصول على جميع العناصر المحددة
+
+            if (activeObjects && activeObjects.length > 0) {
+                // حذف جميع العناصر المحددة
+                activeObjects.forEach(object => {
+                    canvas.remove(object); // حذف العنصر من الـ Canvas
+                });
+
+                canvas.discardActiveObject(); // إلغاء تحديد العناصر بعد الحذف
+                canvas.renderAll(); // إعادة رسم الـ Canvas
+            } else {
+                alert('الرجاء تحديد عنصر أو أكثر أولاً!'); // إذا لم يتم تحديد أي عنصر
+            }
+        }
+
+        // Undo and Redo Functionality
+        function initUndoRedo() {
+            const undoIcon = document.getElementById('undo-icon');
+            const redoIcon = document.getElementById('redo-icon');
+
+            undoIcon.addEventListener('click', undo);
+            redoIcon.addEventListener('click', redo);
+        }
+
+        function saveState() {
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            history.push(JSON.stringify(canvas));
+            historyIndex++;
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                canvas.loadFromJSON(history[historyIndex], () => {
+                    canvas.renderAll();
+                });
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                canvas.loadFromJSON(history[historyIndex], () => {
+                    canvas.renderAll();
+                });
+            }
+        }
+
+        // Lock Icon Functionality
+        function initLockIcon() {
+            const lockIcon = document.getElementById('lock-icon');
+            lockIcon.addEventListener('click', () => {
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (activeObject) {
+                    // التحقق من حالة القفل الحالية للعنصر
+                    if (activeObject.lockMovementX && activeObject.lockMovementY) {
+                        // إذا كان العنصر مقفولًا، قم بفتحه
+                        activeObject.set({
+                            lockMovementX: false,
+                            lockMovementY: false,
+                            hasControls: true,
+                            hasBorders: true,
+                        });
+                        lockIcon.classList.remove('fa-lock'); // تغيير الأيقونة إلى مفتوح
+                        lockIcon.classList.add('fa-unlock');
+                    } else {
+                        // إذا كان العنصر مفتوحًا، قم بقفله
+                        activeObject.set({
+                            lockMovementX: true,
+                            lockMovementY: true,
+                            hasControls: false,
+                            hasBorders: false,
+                        });
+                        lockIcon.classList.remove('fa-unlock'); // تغيير الأيقونة إلى مقفول
+                        lockIcon.classList.add('fa-lock');
+                    }
+
+                    canvas.renderAll(); // إعادة رسم الـ Canvas
+                } else {
+                    alert('الرجاء تحديد عنصر أولاً!'); // إذا لم يتم تحديد أي عنصر
+                }
+            });
+
+            canvas.on('selection:created', () => {
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+                if (activeObject.lockMovementX && activeObject.lockMovementY) {
+                    lockIcon.classList.remove('fa-unlock'); // إذا كان العنصر مقفولًا
+                    lockIcon.classList.add('fa-lock');
+                } else {
+                    lockIcon.classList.remove('fa-lock'); // إذا كان العنصر مفتوحًا
+                    lockIcon.classList.add('fa-unlock');
+                }
+            });
+
+            canvas.on('selection:cleared', () => {
+                lockIcon.classList.remove('fa-lock'); // إعادة الأيقونة إلى الوضع الافتراضي
+                lockIcon.classList.remove('fa-unlock');
+                lockIcon.classList.add('fa-lock');
+            });
+        }
+
+        // Layers Dropdown Functionality
+        function initLayersDropdown() {
+            const layersToggle = document.getElementById('layers-toggle');
+            const layersDropdown = document.getElementById('layers-dropdown');
+
+            layersToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                layersDropdown.style.display = layersDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!layersToggle.contains(event.target) && !layersDropdown.contains(event.target)) {
+                    layersDropdown.style.display = 'none';
+                }
+            });
+
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const action = item.getAttribute('data-action');
+                    const activeObject = canvas.getActiveObject();
+
+                    if (activeObject) {
+                        switch (action) {
+                            case 'send-to-back':
+                                activeObject.sendToBack();
+                                break;
+                            case 'bring-to-front':
+                                activeObject.bringToFront();
+                                break;
+                            case 'send-backwards':
+                                activeObject.sendBackwards();
+                                break;
+                            case 'bring-forwards':
+                                activeObject.bringForward();
+                                break;
+                        }
+                        canvas.renderAll();
+                    } else {
+                        alert('الرجاء تحديد عنصر أولاً!');
+                    }
+
+                    layersDropdown.style.display = 'none';
+                });
+            });
+        }
+
+        // Flip Icon Functionality
+        function initFlipIcon() {
+            let flipState = 0; // 0: الأصل, 1: انعكاس عمودي, 2: انعكاس أفقي
+
+            const flipIcon = document.getElementById('flip-icon');
+            flipIcon.addEventListener('click', () => {
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (activeObject) {
+                    flipState = (flipState + 1) % 3; // التبديل بين الحالات الثلاث
+
+                    switch (flipState) {
+                        case 0:
+                            // إعادة العنصر إلى وضعه الأصلي
+                            activeObject.set({
+                                flipX: false,
+                                flipY: false,
+                            });
+                            break;
+                        case 1:
+                            // انعكاس عمودي
+                            activeObject.set({
+                                flipX: false,
+                                flipY: true,
+                            });
+                            break;
+                        case 2:
+                            // انعكاس أفقي
+                            activeObject.set({
+                                flipX: true,
+                                flipY: false,
+                            });
+                            break;
+                    }
+
+                    canvas.renderAll(); // إعادة رسم الـ Canvas
+                } else {
+                    alert('الرجاء تحديد عنصر أولاً!'); // إذا لم يتم تحديد أي عنصر
+                }
+            });
+        }
+
+        // إضافة الأشكال الهندسية إلى الـ Canvas
+        function initShapeAdding() {
+            document.querySelectorAll('.shape-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const shapeType = item.getAttribute('data-shape');
+                    addShapeToCanvas(shapeType);
+                    document.getElementById('dropdown5').style.display = 'none'; // إغلاق القائمة
+                });
+            });
+        }
+
+        // Function to add shapes to the canvas
+        function addShapeToCanvas(shapeType) {
+            let shape;
+            switch (shapeType) {
+                case 'line':
+                    shape = new fabric.Line([50, 50, 200, 50], {
+                        stroke: 'red', // لون الخط أحمر
+                        strokeWidth: 2,
+                    });
+                    break;
+                case 'circle':
+                    shape = new fabric.Circle({
+                        radius: 75, // نصف القطر 75 بكسل (حجم كبير)
+                        fill: 'red', // لون الحشوة أحمر
+                        stroke: 'black', // لون الحدود أسود
+                        strokeWidth: 2,
+                    });
+                    break;
+                case 'rectangle':
+                    shape = new fabric.Rect({
+                        width: 150, // العرض 150 بكسل
+                        height: 100, // الارتفاع 100 بكسل
+                        fill: 'red', // لون الحشوة أحمر
+                        stroke: 'black', // لون الحدود أسود
+                        strokeWidth: 2,
+                    });
+                    break;
+                case 'square':
+                    shape = new fabric.Rect({
+                        width: 120, // العرض 120 بكسل
+                        height: 120, // الارتفاع 120 بكسل
+                        fill: 'red', // لون الحشوة أحمر
+                        stroke: 'black', // لون الحدود أسود
+                        strokeWidth: 2,
+                    });
+                    break;
+                case 'triangle':
+                    shape = new fabric.Triangle({
+                        width: 100, // العرض 100 بكسل
+                        height: 100, // الارتفاع 100 بكسل
+                        fill: 'red', // لون الحشوة أحمر
+                        stroke: 'black', // لون الحدود أسود
+                        strokeWidth: 2,
+                    });
+                    break;
+                case 'star':
+                    shape = new fabric.Path('M 50 5 L 60 40 L 95 40 L 65 60 L 75 95 L 50 75 L 25 95 L 35 60 L 5 40 L 40 40 Z', {
+                        fill: 'red', // لون الحشوة أحمر
+                        stroke: 'black', // لون الحدود أسود
+                        strokeWidth: 2,
+                    });
+                    break;
+                case 'heart':
+                    shape = new fabric.Path('M 50 15 L 60 30 L 70 15 L 80 30 L 90 15 L 100 30 L 100 60 L 50 95 L 0 60 L 0 30 L 10 15 L 20 30 Z', {
+                        fill: 'red', // لون الحشوة أحمر
+                        stroke: 'black', // لون الحدود أسود
+                        strokeWidth: 2,
+                    });
+                    break;
+                case 'hexagon':
+                    shape = new fabric.Polygon([
+                        { x: 50, y: 0 },
+                        { x: 100, y: 0 },
+                        { x: 125, y: 43 },
+                        { x: 100, y: 86 },
+                        { x: 50, y: 86 },
+                        { x: 25, y: 43 }
+                    ], {
+                        fill: 'red', // لون الحشوة أحمر
+                        stroke: 'black', // لون الحدود أسود
+                        strokeWidth: 2,
+                    });
+                    break;
+            }
+
+            if (shape) {
+                canvas.add(shape);
+                canvas.renderAll();
+            }
+        }
+
+        // فتح Color Picker عند النقر على أيقونة الألوان
+        function initColorPicker() {
+            const colorPickerIcon = document.getElementById('color-picker-icon');
+            const colorPickerInput = document.getElementById('color-picker');
+
+            colorPickerIcon.addEventListener('click', () => {
+                colorPickerInput.click(); // فتح نافذة اختيار الألوان
+            });
+
+            // تطبيق اللون المحدد على العنصر
+            colorPickerInput.addEventListener('input', () => {
+                const selectedColor = colorPickerInput.value; // الحصول على اللون المحدد
+                applyColorToSelectedObject(selectedColor);
+            });
+        }
+
+        // Function to apply color to selected objects
+        function applyColorToSelectedObject(color) {
+            const activeObjects = canvas.getActiveObjects(); // الحصول على جميع العناصر المحددة
+
+            if (activeObjects && activeObjects.length > 0) {
+                activeObjects.forEach(activeObject => {
+                    if (activeObject.type === 'text' || activeObject.type === 'textbox') {
+                        activeObject.set('fill', color);
+                    } else if (activeObject.type === 'rect' || activeObject.type === 'circle' || activeObject.type === 'triangle' || activeObject.type === 'polygon') {
+                        activeObject.set('fill', color);
+                    } else if (activeObject.type === 'line') {
+                        activeObject.set('stroke', color);
+                    } else if (activeObject.type === 'path') {
+                        activeObject.set('fill', color);
+                    } else if (activeObject.type === 'image') {
+                        activeObject.set('stroke', color);
+                    }
+                });
+
+                canvas.renderAll(); // إعادة رسم الـ Canvas
+            } else {
+                // لا تقم بعرض الرسالة إذا لم يتم تحديد عنصر
+                // alert('الرجاء تحديد عنصر أو أكثر أولاً!');
+            }
+        }
+
+        // فتح Progress Bar عند النقر على أيقونة الشفافية
+        function initTransparencyControl() {
+            const transparencyIcon = document.getElementById('transparency-icon');
+            const transparencySlider = document.getElementById('transparency-slider');
+
+            transparencyIcon.addEventListener('click', (event) => {
+                event.stopPropagation(); // منع انتشار الحدث إلى document
+                transparencySlider.style.display = transparencySlider.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // تطبيق الشفافية على العنصر المحدد
+            transparencySlider.addEventListener('input', () => {
+                const transparencyValue = transparencySlider.value; // الحصول على قيمة الشفافية
+                applyTransparencyToSelectedObject(transparencyValue);
+            });
+
+            function applyTransparencyToSelectedObject(transparency) {
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (activeObject) {
+                    activeObject.set('opacity', transparency); // تغيير شفافية العنصر
+                    canvas.renderAll(); // إعادة رسم الـ Canvas
+                } else {
+                    alert('الرجاء تحديد عنصر أولاً!'); // إذا لم يتم تحديد أي عنصر
+                }
+            }
+
+            // إخفاء Progress Bar عند النقر خارج المنطقة
+            document.addEventListener('click', (event) => {
+                const transparencyControl = document.querySelector('.transparency-control');
+                const isClickInside = transparencyControl.contains(event.target);
+
+                // إذا كان النقر خارج منطقة التحكم في الشفافية، قم بإخفاء Progress Bar
+                if (!isClickInside) {
+                    transparencySlider.style.display = 'none';
+                }
+            });
+        }
+
+        // Scissors Icon Functionality
+        function initScissorsIcon() {
+            document.getElementById('scissors-icon').addEventListener('click', () => {
+                window.open('small_project.html', '_blank', 'width=800,height=600');
+            });
+
+            window.addEventListener('message', function (event) {
+                if (event.data.type === 'croppedImage') {
+                    const imageUrl = event.data.image;
+                    fabric.Image.fromURL(imageUrl, function (img) {
+                        img.set({
+                            left: 100, // يمكنك تعديل الموضع حسب الحاجة
+                            top: 100,
+                            scaleX: 0.5, // يمكنك تعديل الحجم حسب الحاجة
+                            scaleY: 0.5,
+                            hasControls: true,
+                            hasBorders: true,
+                        });
+                        canvas.add(img);
+                        canvas.renderAll();
+                    });
+                }
+            });
+        }
+
+        function initSendToSmallProject() {
+            document.getElementById('send-to-small-project').addEventListener('click', () => {
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (!activeObject) {
+                    alert('الرجاء تحديد عنصر لإرساله إلى المشروع الصغير!');
+                    return;
+                }
+
+                // التأكد من أن العنصر المحدد صورة
+                if (activeObject.type === 'image') {
+                    // تحويل الصورة إلى Base64
+                    const imageUrl = activeObject.toDataURL({
+                        format: 'png',
+                        quality: 1,
+                    });
+
+                    // فتح نافذة المشروع الصغير
+                    const smallProjectWindow = window.open('small_project.html', '_blank', 'width=800,height=600');
+
+                    // انتظار تحميل النافذة ثم إرسال الصورة المحددة
+                    smallProjectWindow.onload = () => {
+                        smallProjectWindow.postMessage(
+                            { type: 'sendImageToSmallProject', image: imageUrl },
+                            '*'
+                        );
+                    };
+                } else {
+                    alert('العنصر المحدد ليس صورة! الرجاء تحديد صورة.');
+                }
+            });
+        }
+
+        if (!window.canvas) {
+            window.canvas = new fabric.Canvas('canvas-id');
+        }
+
+// إضافة النص إلى لوحة العمل
+function initTextEditing() {
+    document.querySelectorAll('.text-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const font = item.getAttribute('data-font');
+            const size = parseInt(item.getAttribute('data-size'), 10);
+            addTextToCanvas(font, size);
+            document.getElementById('dropdown6').style.display = 'none'; // إغلاق القائمة
+        });
+    });
+
+function addTextToCanvas(font, size) {
+    const text = new fabric.Textbox('نص تجريبي', {
+        left: 100, // الموضع الأفقي
+        top: 100,  // الموضع الرأسي
+        fontFamily: font, // الخط
+        fontSize: size + 30, // زيادة حجم الخط (+30 لجعله أكبر)
+        fill: '#ffffff', // اللون الأبيض
+        hasControls: true, // تمكين التحكم بالنص
+        hasBorders: true, // تمكين الحدود
+        shadow: '2px 2px 4px rgba(0, 0, 0, 0.5)', // إضافة ظل لتحسين الوضوح
+    });
+
+    canvas.add(text); // إضافة النص إلى الـ Canvas
+    canvas.setActiveObject(text); // تحديد النص كعنصر نشط
+    canvas.renderAll(); // إعادة رسم الـ Canvas
+
+    text.enterEditing(); // يدخل وضع التحرير
+}
+
+            // تمكين التحرير عند النقر على النص
+            canvas.on('mouse:down', function (event) {
+                if (event.target && event.target.type === 'text') {
+                    event.target.enterEditing(); // يدخل في وضع التحرير
+                    event.target.hiddenTextarea.focus(); // التركيز على مربع النص
+                    event.stopPropagation(); // منع انتشار الحدث
+                }
+            });
+
+            // إضافة زر "تم" عند التحرير
+            canvas.on('text:editing:entered', function (event) {
+                const text = event.target;
+
+                // التحقق إذا كان زر "تم" موجودًا مسبقًا
+                if (canvas.getObjects().some(obj => obj.type === 'text' && obj.text === 'تم')) {
+                    return;
+                }
+
+                // إنشاء زر "تم" مخفي
+                const doneButton = new fabric.Text('تم', {
+                    left: text.left + text.width + 20, // يمكن ضبط الموضع إذا لزم الأمر
+                    top: text.top,
+                    fontFamily: 'Arial',
+                    fontSize: 20,
+                    fill: '#007bff',
+                    opacity: 0, // إخفاء الزر (جعله شفافًا بالكامل)
+                    selectable: false, // تعطيل التفاعل مع الزر
+                    evented: true, // السماح بالاستماع للنقر عليه
+                });
+
+                canvas.add(doneButton); // إضافة الزر إلى الـ Canvas
+
+                // حدث النقر على زر "تم"
+                doneButton.on('mousedown', function (e) {
+                    e.stopPropagation(); // منع انتشار الحدث
+                    text.exitEditing(); // إغلاق وضع التحرير
+                    canvas.remove(doneButton); // إزالة زر "تم"
+                    canvas.renderAll(); // إعادة رسم الـ Canvas
+                });
+
+                // إزالة الزر عند خروج المستخدم من وضع التحرير
+                text.on('editing:exited', function () {
+                    canvas.remove(doneButton); // إزالة الزر
+                    canvas.renderAll(); // إعادة رسم الـ Canvas
+                });
+            });
+        }
+		
+			
+
+        // Function to handle image upload
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imageUrl = e.target.result;
+
+                    // تحميل الصورة على الـ Canvas
+                    fabric.Image.fromURL(imageUrl, function (img) {
+                        img.set({
+                            left: 100,
+                            top: 100,
+                            scaleX: 0.5,
+                            scaleY: 0.5,
+                            hasControls: true,
+                            hasBorders: true,
+                        });
+                        canvas.add(img);
+                        canvas.renderAll();
+                    });
+
+                    // حفظ الصورة في localStorage
+                    saveImageToLocalStorage(imageUrl);
+
+                    // إضافة الصورة إلى قائمة الصور المرفوعة
+                    addImageToUploadedGrid(imageUrl);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Function to save image to localStorage
+        function saveImageToLocalStorage(imageUrl) {
+            let uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+            uploadedImages.push(imageUrl);
+            localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
+        }
+
+        // Function to add image to the uploaded images grid
+        function addImageToUploadedGrid(imageUrl) {
+            const grid = document.getElementById('uploaded-images-grid');
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = 'Uploaded Image';
+            img.loading = 'lazy';
+            
+            // عند النقر على الصورة، يتم تحميلها على الـ Canvas
+            img.onclick = () => {
+                fabric.Image.fromURL(imageUrl, function (img) {
+                    img.set({
+                        left: 100, // يمكن تعديل الموضع حسب الحاجة
+                        top: 100,
+                        scaleX: 0.5, // يمكن تعديل الحجم حسب الحاجة
+                        scaleY: 0.5,
+                        hasControls: true,
+                        hasBorders: true,
+                    });
+                    canvas.add(img);
+                    canvas.renderAll();
+                });
+            };
+            
+            grid.appendChild(img);
+        }
+
+        // Function to load uploaded images from localStorage
+        function loadUploadedImages() {
+            const uploadedImages = JSON.parse(localStorage.getItem('uploadedImages')) || [];
+            const grid = document.getElementById('uploaded-images-grid');
+            grid.innerHTML = ''; // مسح القائمة قبل التحميل
+
+            uploadedImages.forEach(imageUrl => {
+                addImageToUploadedGrid(imageUrl);
+            });
+        }
+
+        // Function to initialize the upload button
+        function initUploadButton() {
+            const uploadButton = document.getElementById('upload-image-btn');
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.style.display = 'none';
+
+            // إضافة عنصر fileInput إلى DOM
+            document.body.appendChild(fileInput);
+
+            // عند النقر على زر "رفع صورة"، يتم فتح نافذة اختيار الملفات
+            uploadButton.addEventListener('click', () => {
+                fileInput.click(); // فتح نافذة اختيار الملفات
+            });
+
+            // عند اختيار ملف، يتم التعامل معه
+            fileInput.addEventListener('change', handleImageUpload);
+        }
+
+        function initBackgroundToggle() {
+            const backgroundToggle = document.getElementById('background-toggle');
+
+            if (!backgroundToggle) {
+                console.error('زر background-toggle غير موجود!');
+                return;
+            }
+
+            backgroundToggle.addEventListener('click', () => {
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (activeObject && activeObject.type === 'image') {
+                    const currentBackground = canvas.backgroundImage; // الحصول على الخلفية الحالية
+
+                    if (currentBackground && currentBackground.getSrc() === activeObject.getSrc()) {
+                        // إزالة الخلفية
+                        canvas.setBackgroundImage(null, canvas.renderAll.bind(canvas));
+                        alert('تم إزالة الصورة من الخلفية!');
+                    } else {
+                        // حساب نسبة التحجيم لتتناسب الصورة مع الـ Canvas
+                        const scaleX = canvas.width / activeObject.width; // نسبة العرض
+                        const scaleY = canvas.height / activeObject.height; // نسبة الارتفاع
+
+                        // تعيين الخلفية مع التحجيم المناسب
+                        canvas.setBackgroundImage(activeObject, canvas.renderAll.bind(canvas), {
+                            scaleX: scaleX,
+                            scaleY: scaleY,
+                            left: 0, // ضبط الموضع إلى الزاوية العلوية اليسرى
+                            top: 0,
+                            originX: 'left', // ضبط نقطة الأصل إلى اليسار
+                            originY: 'top',  // ضبط نقطة الأصل إلى الأعلى
+                            selectable: false, // تعطيل إمكانية التحديد
+                            evented: false,    // تعطيل إمكانية التفاعل
+                        });
+
+                        // إزالة الصورة من الكائنات النشطة على الـ Canvas
+                        canvas.remove(activeObject);
+
+                        alert('تم تعيين الصورة كخلفية!');
+                    }
+                } else {
+                    alert('الرجاء تحديد صورة أولاً!');
+                }
+            });
+        }
+
+        // Function to initialize text editing dropdown
+        function initTextEditDropdown() {
+            const textEditToggle = document.getElementById('text-edit-toggle');
+            const textEditDropdown = document.getElementById('text-edit-dropdown');
+
+            // فتح/إغلاق القائمة المنسدلة عند النقر على الأيقونة
+            textEditToggle.addEventListener('click', (event) => {
+                event.stopPropagation(); // منع انتشار الحدث
+                textEditDropdown.style.display = textEditDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // إغلاق القائمة المنسدلة عند النقر خارجها
+            document.addEventListener('click', (event) => {
+                if (!textEditToggle.contains(event.target) && !textEditDropdown.contains(event.target)) {
+                    textEditDropdown.style.display = 'none';
+                }
+            });
+
+            // تطبيق التعديلات على النص المحدد
+            document.querySelectorAll('.text-edit-dropdown .dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const action = item.getAttribute('data-action');
+                    const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                    if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
+                        switch (action) {
+                            case 'bold':
+                                // تبديل حالة النص العريض
+                                activeObject.set('fontWeight', activeObject.fontWeight === 'bold' ? 'normal' : 'bold');
+                                break;
+                            case 'italic':
+                                // تبديل حالة النص المائل
+                                activeObject.set('fontStyle', activeObject.fontStyle === 'italic' ? 'normal' : 'italic');
+                                break;
+                            case 'underline':
+                                // تبديل حالة الخط تحت النص
+                                activeObject.set('underline', !activeObject.underline);
+                                break;
+                            case 'border':
+                                // إضافة أو إزالة حدود النص
+                                if (activeObject.stroke) {
+                                    // إذا كان هناك حدود، قم بإزالتها
+                                    activeObject.set({
+                                        stroke: null,
+                                        strokeWidth: 0,
+                                    });
+                                } else {
+                                    // إذا لم يكن هناك حدود، قم بإضافتها
+                                    activeObject.set({
+                                        stroke: '#000000', // لون الحدود (أسود)
+                                        strokeWidth: 1, // سمك الحدود
+                                    });
+                                }
+                                break;
+                        }
+                        canvas.renderAll(); // إعادة رسم الـ Canvas
+                    } else {
+                        alert('الرجاء تحديد نص أولاً!'); // إذا لم يتم تحديد نص
+                    }
+
+                    textEditDropdown.style.display = 'none'; // إغلاق القائمة المنسدلة بعد التعديل
+                });
+            });
+        }
+
+        // Function to initialize border color picker
+        function initBorderColorPicker() {
+            const borderColorToggle = document.getElementById('border-color-toggle');
+            const borderColorPicker = document.getElementById('border-color-picker');
+
+            // فتح Color Picker عند النقر على الأيقونة
+            borderColorToggle.addEventListener('click', () => {
+                borderColorPicker.click(); // فتح نافذة اختيار الألوان
+            });
+
+            // تطبيق اللون المحدد على حدود النص
+            borderColorPicker.addEventListener('input', () => {
+                const selectedColor = borderColorPicker.value; // الحصول على اللون المحدد
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
+                    if (activeObject.stroke) {
+                        // إذا كان هناك حدود، قم بتغيير لونها
+                        activeObject.set('stroke', selectedColor);
+                    } else {
+                        // إذا لم يكن هناك حدود، قم بإضافتها مع اللون المحدد
+                        activeObject.set({
+                            stroke: selectedColor, // لون الحدود
+                            strokeWidth: 2, // سمك الحدود الافتراضي
+                        });
+                    }
+                    canvas.renderAll(); // إعادة رسم الـ Canvas
+                } else {
+                    alert('الرجاء تحديد نص أولاً!'); // إذا لم يتم تحديد نص
+                }
+            });
+        }
+
+        // Function to apply external border to text
+        function applyExternalBorderToText(textObject, color, thickness) {
+            // إضافة حدود خارجية باستخدام stroke و strokeWidth
+            textObject.set({
+                stroke: color,          // لون الحدود
+                strokeWidth: thickness, // سماكة الحدود
+                strokeLineJoin: 'round', // جعل حواف الحدود مستديرة
+                strokeLineCap: 'round',  // جعل نهايات الحدود مستديرة
+            });
+            canvas.renderAll(); // إعادة رسم الـ Canvas
+        }
+
+        // Function to remove external border from text
+        function removeExternalBorderFromText(textObject) {
+            textObject.set({
+                stroke: null,         // إزالة لون الحدود
+                strokeWidth: 0,       // إزالة سماكة الحدود
+            });
+            canvas.renderAll(); // إعادة رسم الـ Canvas
+        }
+
+        // Function to initialize border thickness slider
+        function initBorderThicknessSlider() {
+            const borderThicknessToggle = document.getElementById('border-thickness-toggle');
+            const borderThicknessSlider = document.getElementById('border-thickness-slider');
+            const borderThicknessRange = document.getElementById('border-thickness-range');
+            const borderThicknessValue = document.getElementById('border-thickness-value');
+
+            // فتح/إغلاق شريط التمرير عند النقر على الأيقونة
+            borderThicknessToggle.addEventListener('click', (event) => {
+                event.stopPropagation(); // منع انتشار الحدث
+                borderThicknessSlider.style.display = borderThicknessSlider.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // إغلاق شريط التمرير عند النقر خارجها
+            document.addEventListener('click', (event) => {
+                if (!borderThicknessToggle.contains(event.target) && !borderThicknessSlider.contains(event.target)) {
+                    borderThicknessSlider.style.display = 'none';
+                }
+            });
+
+            // تحديث قيمة سمك الحدود عند تحريك الشريط
+            borderThicknessRange.addEventListener('input', () => {
+                const thickness = parseFloat(borderThicknessRange.value); // الحصول على القيمة الحالية
+                borderThicknessValue.textContent = `${thickness}px`; // عرض القيمة الحالية
+
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
+                    const borderColor = activeObject.stroke || '#000000'; // لون الحدود (أسود افتراضي)
+                    applyExternalBorderToText(activeObject, borderColor, thickness); // تطبيق الحدود الخارجية
+                }
+            });
+        }
+
+        // Function to toggle text border and show/hide border controls
+        function toggleTextBorder() {
+            const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+            if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
+                if (activeObject.stroke) {
+                    // إذا كان هناك حدود، قم بإزالتها
+                    removeExternalBorderFromText(activeObject);
+                    // إخفاء أيقونات تغيير لون الحدود وتغيير سمك الحدود
+                    document.getElementById('border-color-icon').style.display = 'none';
+                    document.getElementById('border-thickness-icon').style.display = 'none';
+                } else {
+                    // إذا لم يكن هناك حدود، قم بإضافتها
+                    applyExternalBorderToText(activeObject, '#000000', 2); // حدود افتراضية (أسود، 2px)
+                    // إظهار أيقونات تغيير لون الحدود وتغيير سمك الحدود
+                    document.getElementById('border-color-icon').style.display = 'inline-block';
+                    document.getElementById('border-thickness-icon').style.display = 'inline-block';
+                }
+                canvas.renderAll(); // إعادة رسم الـ Canvas
+            } else {
+                alert('الرجاء تحديد نص أولاً!'); // إذا لم يتم تحديد نص
+            }
+        }
+
+        // Function to initialize font change dropdown
+        function initFontChangeDropdown() {
+            const fontChangeToggle = document.getElementById('font-change-toggle');
+            const fontChangeDropdown = document.getElementById('font-change-dropdown');
+
+            fontChangeToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                fontChangeDropdown.style.display = fontChangeDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!fontChangeToggle.contains(event.target) && !fontChangeDropdown.contains(event.target)) {
+                    fontChangeDropdown.style.display = 'none';
+                }
+            });
+
+            document.querySelectorAll('.font-change-dropdown .dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const selectedFont = item.getAttribute('data-font');
+                    const activeObject = canvas.getActiveObject();
+
+                    if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
+                        activeObject.set('fontFamily', selectedFont);
+                        canvas.renderAll();
+                    } else {
+                        alert('الرجاء تحديد نص أولاً!');
+                    }
+
+                    fontChangeDropdown.style.display = 'none';
+                });
+            });
+        }
+
+        // Function to initialize text alignment toggle
+        function initTextAlignToggle() {
+            const textAlignToggle = document.getElementById('text-align-toggle');
+            let alignState = 0; // 0: يمين, 1: وسط, 2: يسار
+
+            // تغيير محاذاة النص عند النقر على الأيقونة
+            textAlignToggle.addEventListener('click', () => {
+                const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+                if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
+                    alignState = (alignState + 1) % 3; // التبديل بين الحالات الثلاث
+
+                    switch (alignState) {
+                        case 0:
+                            // محاذاة إلى اليمين
+                            activeObject.set('textAlign', 'right');
+                            textAlignToggle.classList.remove('fa-align-center');
+                            textAlignToggle.classList.remove('fa-align-left');
+                            textAlignToggle.classList.add('fa-align-right');
+                            break;
+                        case 1:
+                            // محاذاة إلى الوسط
+                            activeObject.set('textAlign', 'center');
+                            textAlignToggle.classList.remove('fa-align-right');
+                            textAlignToggle.classList.remove('fa-align-left');
+                            textAlignToggle.classList.add('fa-align-center');
+                            break;
+                        case 2:
+                            // محاذاة إلى اليسار
+                            activeObject.set('textAlign', 'left');
+                            textAlignToggle.classList.remove('fa-align-right');
+                            textAlignToggle.classList.remove('fa-align-center');
+                            textAlignToggle.classList.add('fa-align-left');
+                            break;
+                    }
+
+                    canvas.renderAll(); // إعادة رسم الـ Canvas
+                } else {
+                    alert('الرجاء تحديد نص أولاً!'); // إذا لم يتم تحديد نص
+                }
+            });
+        }
+
+        // Function to initialize canvas background color change
+        function initCanvasBackgroundColorChange() {
+            const canvasColorPicker = document.getElementById('canvas-color-picker');
+
+            // عند تغيير اللون في Color Picker
+            canvasColorPicker.addEventListener('input', () => {
+                const selectedColor = canvasColorPicker.value; // الحصول على اللون المحدد
+                canvas.setBackgroundColor(selectedColor, canvas.renderAll.bind(canvas)); // تغيير خلفية الـ Canvas
+            });
+        }
+		
+		
+		
+		
+	// Function to toggle the file dropdown
+function toggleFileDropdown() {
+    const dropdown = document.getElementById('file-dropdown');
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+}
+
+// Function to handle file dropdown actions
+function handleFileAction(action) {
+    switch (action) {
+        case 'save-json':
+            saveProjectAsJson();
+            break;
+        case 'open-json':
+            openProjectFromJson();
+            break;
+        case 'save-google-drive':
+            saveProjectToGoogleDrive();
+            break;
+    }
+}
+
+// Function to save project as JSON
+function saveProjectAsJson() {
+    const projectData = JSON.stringify(canvas);
+    const blob = new Blob([projectData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'project.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    alert('تم حفظ المشروع كملف JSON بنجاح!');
+}
+
+// Function to open project from JSON
+function openProjectFromJson() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = function (event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const projectData = e.target.result;
+                canvas.loadFromJSON(projectData, function () {
+                    canvas.renderAll();
+                    alert('تم فتح المشروع بنجاح!');
+                });
+            };
+            reader.readAsText(file);
+        }
+    };
+    input.click();
+}
+
+
+// إغلاق القائمة المنسدلة عند النقر خارجها
+document.addEventListener('click', function (event) {
+    const fileContainer = document.querySelector('.file-container');
+    const isClickInside = fileContainer.contains(event.target);
+
+    if (!isClickInside) {
+        document.getElementById('file-dropdown').style.display = 'none';
+    }
+});
+
+// إضافة حدث النقر على عناصر القائمة المنسدلة
+document.querySelectorAll('.file-dropdown .dropdown-item').forEach(item => {
+    item.addEventListener('click', () => {
+        const action = item.getAttribute('data-action');
+        handleFileAction(action);
+        document.getElementById('file-dropdown').style.display = 'none'; // إغلاق القائمة
+    });
+});	
+		
+		
+		
+		
+	    function canvasToImage(format = 'png') {
+        const canvasElement = document.getElementById('canvas');
+        const imageUrl = canvasElement.toDataURL(`image/${format}`, 1.0);
+        return imageUrl;
+    }
+
+    function shareOnFacebook() {
+        const imageUrl = canvasToImage('png');
+        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(imageUrl)}`;
+        window.open(shareUrl, '_blank');
+    }
+
+    function shareOnTwitter() {
+        const imageUrl = canvasToImage('png');
+        const text = 'انظر إلى الصورة التي قمت بإنشائها!';
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(imageUrl)}`;
+        window.open(shareUrl, '_blank');
+    }
+
+    function downloadImageForInstagram() {
+        const imageUrl = canvasToImage('png');
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = 'image.png';
+        link.click();
+        alert('تم تحميل الصورة. الرجاء رفعها يدويًا إلى Instagram.');
+    }
+
+    function shareOnWhatsApp() {
+        const imageUrl = canvasToImage('png');
+        const text = 'انظر إلى الصورة التي قمت بإنشائها!';
+        const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + imageUrl)}`;
+        window.open(shareUrl, '_blank');
+    }	
+		
+		
+		
+		
+		
+		
+	window.addEventListener('beforeunload', function (event) {
+    if (canvas.getObjects().length > 0) { // التحقق من وجود عناصر في الـ Canvas
+        event.preventDefault(); // منع الإغلاق التلقائي
+        event.returnValue = ''; // عرض رسالة التحذير
+    }
+});	
+
+
+
+
+
+// تهيئة أيقونة إضافة/إزالة الحدود
+// تهيئة أيقونة إضافة/إزالة الحدود
+function initAddBorderIcon() {
+    const addBorderIcon = document.getElementById('add-border-icon');
+
+    addBorderIcon.addEventListener('click', () => {
+        const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+        if (activeObject) {
+            if (activeObject.stroke) {
+                // إذا كان العنصر يحتوي على حدود، قم بإزالتها
+                activeObject.set({
+                    stroke: null, // إزالة لون الحدود
+                    strokeWidth: 0, // إزالة سمك الحدود
+                });
+                addBorderIcon.classList.remove('fa-border-all'); // تغيير الأيقونة
+                addBorderIcon.classList.add('fa-border-none'); // أيقونة بدون حدود
+            } else {
+                // إذا لم يكن العنصر يحتوي على حدود، قم بإضافتها
+                activeObject.set({
+                    stroke: '#000000', // لون الحدود (أسود)
+                    strokeWidth: 2, // سمك الحدود
+                });
+                addBorderIcon.classList.remove('fa-border-none'); // تغيير الأيقونة
+                addBorderIcon.classList.add('fa-border-all'); // أيقونة مع حدود
+            }
+
+            canvas.renderAll(); // إعادة رسم الـ Canvas
+        } else {
+            alert('الرجاء تحديد عنصر أولاً!'); // إذا لم يتم تحديد أي عنصر
+        }
+    });
+}
+
+	
+
+
+
+
+// تهيئة أيقونة التحكم في حجم الحدود
+function initBorderSizeControl() {
+    const borderSizeIcon = document.getElementById('border-size-icon');
+    const borderSizeSlider = document.getElementById('border-size-slider');
+    const borderSizeRange = document.getElementById('border-size-range');
+    const borderSizeValue = document.getElementById('border-size-value');
+
+    // فتح/إغلاق شريط التمرير عند النقر على الأيقونة
+    borderSizeIcon.addEventListener('click', (event) => {
+        event.stopPropagation(); // منع انتشار الحدث
+        borderSizeSlider.style.display = borderSizeSlider.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // إغلاق شريط التمرير عند النقر خارج المنطقة
+    document.addEventListener('click', (event) => {
+        if (!borderSizeIcon.contains(event.target) && !borderSizeSlider.contains(event.target)) {
+            borderSizeSlider.style.display = 'none';
+        }
+    });
+
+    // تحديث حجم الحدود عند تحريك الشريط
+    borderSizeRange.addEventListener('input', () => {
+        const size = parseInt(borderSizeRange.value, 10); // الحصول على القيمة الحالية
+        borderSizeValue.textContent = `${size}px`; // عرض القيمة الحالية
+
+        const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+        if (activeObject) {
+            // تحديث سمك حدود العنصر المحدد
+            activeObject.set({
+                strokeWidth: size, // تحديث سمك الحدود
+            });
+
+            canvas.renderAll(); // إعادة رسم الـ Canvas
+        }
+    });
+}
+
+
+function sendImageToSmallProject() {
+    const activeObject = canvas.getActiveObject(); // Get the selected object
+
+    if (!activeObject) {
+        alert('Please select an element to send to the small project!');
+        return;
+    }
+
+    // Check if the selected object is an image
+    if (activeObject.type === 'image') {
+        // Convert the image to Base64
+        const imageUrl = activeObject.toDataURL({
+            format: 'png',
+            quality: 1,
+        });
+
+        console.log('Image converted to Base64:', imageUrl);
+
+        // Calculate the position to center the window
+        const popupWidth = 800; // Width of the popup window
+        const popupHeight = 600; // Height of the popup window
+        const left = (window.screen.width - popupWidth) / 2; // Center horizontally
+        const top = (window.screen.height - popupHeight) / 2; // Center vertically
+
+        // Open the small project window in the center of the screen
+        const smallProjectWindow = window.open(
+            'small_project.html',
+            '_blank',
+            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
+
+        if (!smallProjectWindow) {
+            alert('Failed to open the new window! Please check your browser settings.');
+            return;
+        }
+
+        console.log('New window opened:', smallProjectWindow);
+
+        // Use a delay to ensure the new window is fully loaded
+        setTimeout(() => {
+            // Send the image using postMessage
+            smallProjectWindow.postMessage(
+                { type: 'sendImage', image: imageUrl },
+                '*' // Allow cross-origin communication
+            );
+            console.log('Image sent to the new window.');
+        }, 1000); // Delay of 1 second (adjust as needed)
+    } else {
+        alert('The selected element is not an image! Please select an image.');
+    }
+}
+
+	
+
+
+
+
+// Function to center the selected object on the canvas
+function centerSelectedObject() {
+    const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+    if (activeObject) {
+        // حساب مركز الـ Canvas
+        const centerX = canvas.getWidth() / 2;
+        const centerY = canvas.getHeight() / 2;
+
+        // حساب مركز العنصر المحدد
+        const objectCenterX = activeObject.getCenterPoint().x;
+        const objectCenterY = activeObject.getCenterPoint().y;
+
+        // حساب الإزاحة المطلوبة لتوسيط العنصر
+        const offsetX = centerX - objectCenterX;
+        const offsetY = centerY - objectCenterY;
+
+        // تحريك العنصر إلى المركز
+        activeObject.set({
+            left: activeObject.left + offsetX,
+            top: activeObject.top + offsetY,
+        });
+
+        canvas.renderAll(); // إعادة رسم الـ Canvas
+    } else {
+        alert('الرجاء تحديد عنصر أولاً!'); // إذا لم يتم تحديد أي عنصر
+    }
+}
+
+// تهيئة أيقونة توسيط العنصر
+function initCenterIcon() {
+    const centerIcon = document.getElementById('center-icon');
+    centerIcon.addEventListener('click', centerSelectedObject);
+}
+
+
+
+
+
+
+
+
+
+// تهيئة أيقونة إزالة الخلفية
+function initRemoveBackgroundIcon() {
+    const removeBgIcon = document.getElementById('remove-bg-icon');
+    removeBgIcon.addEventListener('click', () => {
+        const activeObject = canvas.getActiveObject(); // الحصول على العنصر المحدد
+
+        if (activeObject && activeObject.type === 'image') {
+            // تحويل الصورة إلى Base64
+            const imageUrl = activeObject.toDataURL({
+                format: 'png',
+                quality: 1,
+            });
+
+            console.log('الصورة المرسلة:', imageUrl); // تحقق من الصورة المرسلة
+
+            // فتح نافذة المشروع الصغير
+            const smallProjectWindow = window.open('remove_bg_magdy.html', '_blank', 'width=800,height=600');
+
+            // تأخير إرسال الرسالة حتى تتأكد من تحميل النافذة الصغيرة
+            setTimeout(() => {
+                smallProjectWindow.postMessage(
+                    { type: 'sendImageToRemoveBg', image: imageUrl },
+                    '*'
+                );
+            }, 1000); // تأخير 1 ثانية (يمكن تعديل الوقت حسب الحاجة)
+        } else {
+            alert('الرجاء تحديد صورة أولاً!');
+        }
+    });
+}
+
+// استقبال الصورة المعدلة من المشروع الصغير
+window.addEventListener('message', function (event) {
+    if (event.data.type === 'returnImageWithoutBg') {
+        const imageUrl = event.data.image;
+
+        // تحميل الصورة المعدلة إلى الـ Canvas
+        fabric.Image.fromURL(imageUrl, function (img) {
+            img.set({
+                left: 100, // يمكن تعديل الموضع حسب الحاجة
+                top: 100,
+                scaleX: 0.5, // يمكن تعديل الحجم حسب الحاجة
+                scaleY: 0.5,
+                hasControls: true,
+                hasBorders: true,
+            });
+            canvas.add(img);
+            canvas.renderAll();
+        });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// تهيئة أيقونة توسيط العنصر عند تحميل الصفحة
+window.onload = function () {
+    initCanvas();
+    generateImageGrid('backgrounds', 'bg', 100, 'backgrounds-grid', 'background', 'jpg');
+    generateImageGrid('persons', 'person', 60, 'persons-grid', 'person');
+    generateImageGrid('emojis', 'emoji', 30, 'emojis-grid', 'emoji');
+    generateImageGrid('icons', 'ico', 30, 'icons-grid', 'icon');
+    generateImageGrid('borders', 'border', 25, 'frames-grid', 'frame');
+    loadUploadedImages(); // تحميل الصور المرفوعة مسبقًا
+    initUploadButton(); // تهيئة زر رفع الصورة
+    initBackgroundToggle(); // تهيئة زر تغيير الخلفية
+    initTextEditDropdown(); // تهيئة قائمة تعديل النص
+    initBorderColorPicker(); // تهيئة Color Picker لتغيير لون الحدود
+    initBorderThicknessSlider(); // تهيئة شريط التمرير لتغيير سمك الحدود
+    initFontChangeDropdown(); // تهيئة قائمة تغيير الخط
+    initTextAlignToggle(); // تهيئة أيقونة محاذاة النص
+    initCanvasBackgroundColorChange(); // تهيئة تغيير لون خلفية الـ Canvas
+    initAddBorderIcon(); // تهيئة أيقونة إضافة الحدود
+    initBorderSizeControl(); // تهيئة أيقونة التحكم في حجم الحدود
+    initCenterIcon(); // تهيئة أيقونة توسيط العنصر
+	initRemoveBackgroundIcon(); // تهيئة أيقونة إزالة الخلفية
+};
+
+
+
+
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أداة قص الصور</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        input[type="file"], button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #canvas-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+        }
+        canvas {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>أداة قص الصور</h1>
+    <input type="file" id="upload" accept="image/*">
+    <div id="canvas-container">
+        <canvas id="imageCanvas"></canvas>
+    </div>
+    <button id="cropBtn">قص الصورة</button>
+    <button id="downloadBtn" style="display: none;">تحميل الصورة</button>
+
+    <script>
+        const upload = document.getElementById('upload');
+const canvas = document.getElementById('imageCanvas');
+const ctx = canvas.getContext('2d');
+
+let img = new Image();
+let isDragging = false;
+let startX, startY, endX, endY;
+
+// تحميل الصورة من الملف
+upload.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// رسم الصورة على اللوحة
+img.onload = () => {
+    canvas.width = img.width > window.innerWidth ? window.innerWidth - 40 : img.width;
+    canvas.height = img.height * (canvas.width / img.width);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+};
+
+// بدء التحديد (للماوس)
+canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    isDragging = true;
+    startX = e.clientX - rect.left;
+    startY = e.clientY - rect.top;
+});
+
+// رسم مستطيل التحديد (للماوس)
+canvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+        const rect = canvas.getBoundingClientRect();
+        endX = e.clientX - rect.left;
+        endY = e.clientY - rect.top;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+    }
+});
+
+// إنهاء التحديد (للماوس)
+canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+// بدء التحديد (لللمس)
+canvas.addEventListener('touchstart', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    isDragging = true;
+    startX = touch.clientX - rect.left;
+    startY = touch.clientY - rect.top;
+});
+
+// رسم مستطيل التحديد (لللمس)
+canvas.addEventListener('touchmove', (e) => {
+    if (isDragging) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        endX = touch.clientX - rect.left;
+        endY = touch.clientY - rect.top;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+    }
+});
+
+// إنهاء التحديد (لللمس)
+canvas.addEventListener('touchend', () => {
+    isDragging = false;
+});
+
+// تنفيذ القص
+cropBtn.addEventListener('click', () => {
+    if (startX !== undefined && startY !== undefined && endX !== undefined && endY !== undefined) {
+        const rectX = Math.min(startX, endX);
+        const rectY = Math.min(startY, endY);
+        const rectWidth = Math.abs(endX - startX);
+        const rectHeight = Math.abs(endY - startY);
+
+        const croppedCanvas = document.createElement('canvas');
+        const croppedCtx = croppedCanvas.getContext('2d');
+
+        croppedCanvas.width = rectWidth;
+        croppedCanvas.height = rectHeight;
+
+        croppedCtx.drawImage(
+            canvas,
+            rectX,
+            rectY,
+            rectWidth,
+            rectHeight,
+            0,
+            0,
+            rectWidth,
+            rectHeight
+        );
+
+        const croppedImage = croppedCanvas.toDataURL();
+        canvas.width = rectWidth;
+        canvas.height = rectHeight;
+        ctx.drawImage(croppedCanvas, 0, 0);
+
+        // إرسال الصورة المقطوعة إلى الـ Canvas الرئيسي
+        window.opener.postMessage({ type: 'croppedImage', image: croppedImage }, '*');
+        window.close(); // إغلاق النافذة المنبثقة
+    }
+});
+
+        // استقبال الصورة من النافذة الرئيسية
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'sendImage') {
+                const imageUrl = event.data.image;
+
+                // تحميل الصورة إلى اللوحة
+                img.src = imageUrl;
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                };
+            }
+        });
+    </script>
+</body>
+</html>
