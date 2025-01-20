@@ -873,6 +873,22 @@ display: none;
     height: auto; /* الحفاظ على نسبة العرض إلى الارتفاع */
 }
 
+
+
+
+
+@media (min-width: 1200px) {
+    #canvas {
+        max-width: 1000px; /* تقليل العرض */
+        max-height: 563px; /* الحفاظ على نسبة 16:9 */
+    }
+}
+
+
+
+
+
+
 		
     </style>
 </head>
@@ -1221,6 +1237,22 @@ window.onload = function () {
     resizeCanvas(); // ضبط حجم Canvas عند التحميل
     // باقي الكود...
 };
+
+
+
+function resizeCanvasForLargeScreens() {
+    if (window.innerWidth >= 1200) {
+        canvas.setWidth(1000); // العرض الجديد
+        canvas.setHeight((1000 * 9) / 16); // الحفاظ على نسبة 16:9
+        canvas.renderAll();
+    }
+}
+
+window.addEventListener('resize', resizeCanvasForLargeScreens);
+window.onload = resizeCanvasForLargeScreens; // تطبيق الإعداد عند تحميل الصفحة
+
+
+
 
         // Function to toggle dropdown
         function toggleDropdown(id) {
